@@ -3,10 +3,14 @@
 // found in the LICENSE file.
 
 import 'dart:async';
+import 'dart:math';
 
+import 'package:flare_flutter/flare_actor.dart';
+import 'package:flare_flutter/flare_cache_builder.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:simple_animations/simple_animations.dart';
 
 enum _Element {
   background,
@@ -98,9 +102,9 @@ class _DigitalClockState extends State<DigitalClock> {
     final colors = Theme.of(context).brightness == Brightness.light
         ? _lightTheme
         : _darkTheme;
-    final hour =
-        DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
-    final minute = DateFormat('mm').format(_dateTime);
+    // final hour =
+    //     DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
+    // final minute = DateFormat('mm').format(_dateTime);
     final fontSize = MediaQuery.of(context).size.width / 3.5;
     final offset = -fontSize / 7;
     final defaultStyle = TextStyle(
@@ -116,19 +120,241 @@ class _DigitalClockState extends State<DigitalClock> {
       ],
     );
 
+    return Stack(
+      children: <Widget>[
+        Positioned.fill(child: _AnimatedBackground()),
+        onBottom(_AnimatedWave(
+          height: 100,
+          speed: 1.0,
+        )),
+        onBottom(_AnimatedWave(
+          height: 80,
+          speed: 0.9,
+          offset: pi,
+        )),
+        onBottom(_AnimatedWave(
+          height: 120,
+          speed: 1.0,
+          offset: pi / 2,
+        )),
+        Positioned.fill(child: _buildContent()),
+      ],
+    );
+    // return Container(
+    //   color: colors[_Element.background],
+    //   child: Center(
+    //     child: _buildTime(
+    //       hour: hour,
+    //       minute: minute,
+    //     )
+    //     // child: DefaultTextStyle(
+    //     //   style: defaultStyle,
+    //     //   child: Stack(
+    //     //     children: <Widget>[
+    //     //       Positioned(left: offset, top: 0, child: Text(hour)),
+    //     //       Positioned(right: offset, bottom: offset, child: Text(minute)),
+    //     //     ],
+    //     //   ),
+    //     // ),
+    //     // child: FlareCacheBuilder(
+    //     //   ["assets/Weather_Flat_Icons.flr"],
+    //     //   builder: (BuildContext context, bool isWarm) {
+    //     //     return !isWarm
+    //     //         ? Container(child:Text("NO"))
+    //     //         : FlareActor(
+    //     //             "assets/Weather_Flat_Icons.flr",
+    //     //             alignment: Alignment.center,
+    //     //             fit: BoxFit.contain,
+    //     //             animation: '13d',
+    //     //           );
+    //     //   },
+    //     // ),
+    //   ),
+    // );
+  }
+
+  Widget _buildContent() {
     return Container(
-      color: colors[_Element.background],
-      child: Center(
-        child: DefaultTextStyle(
-          style: defaultStyle,
-          child: Stack(
-            children: <Widget>[
-              Positioned(left: offset, top: 0, child: Text(hour)),
-              Positioned(right: offset, bottom: offset, child: Text(minute)),
-            ],
+      padding: EdgeInsets.symmetric(
+        horizontal: 16.0,
+        vertical: 16.0,
+      ),
+      child: Column(
+        children: <Widget>[
+          _buildRowTop(),
+          _buildRowCenter(),
+          _buildRowBottom(),
+        ],
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.max,
+      ),
+    );
+  }
+
+  Widget _buildRowBottom() {
+    final hour =
+        DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
+    final minute = DateFormat('mm').format(_dateTime);
+    return Container(
+      child: _buildTime(
+        hour: hour,
+        minute: minute,
+      ),
+    );
+  }
+
+  Widget _buildRowCenter() {
+    return Column(
+      children: <Widget>[
+        Text(
+          widget.model.weatherString,
+        ),
+        Container(
+          height: 200,
+          child: FlareCacheBuilder(
+            ["assets/Weather_Flat_Icons.flr"],
+            builder: (BuildContext context, bool isWarm) {
+              return !isWarm
+                ? Container(child:Text("NO"))
+                : FlareActor(
+                  "assets/Weather_Flat_Icons.flr",
+                  alignment: Alignment.center,
+                  fit: BoxFit.contain,
+                  animation: '13d',
+                );
+            },
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRowTop() {
+    return Row(
+      children: <Widget>[
+        Text(
+          widget.model.location
+        ),
+        Text(
+          widget.model.temperatureString
+        ),
+      ],
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisSize: MainAxisSize.max,
+    );
+  }
+
+  Widget _buildTime({ @required String hour, @required String minute}) {
+    return Container(
+      child: Center(
+        child: Row(
+          children: <Widget>[
+            Text(hour),
+            Text(':'),
+            Text(minute),
+          ],
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
         ),
       ),
     );
+    
+  }
+
+  onBottom(Widget child) => Positioned.fill(
+    child: Align(
+      alignment: Alignment.bottomCenter,
+      child: child,
+    ),
+  );
+}
+
+class _AnimatedBackground extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final tween = MultiTrackTween([
+      Track("color1").add(Duration(seconds: 3),
+          ColorTween(begin: Color(0xffD38312), end: Colors.lightBlue.shade900)),
+      Track("color2").add(Duration(seconds: 3),
+          ColorTween(begin: Color(0xffA83279), end: Colors.blue.shade600))
+    ]);
+
+    return ControlledAnimation(
+      playback: Playback.MIRROR,
+      tween: tween,
+      duration: tween.duration,
+      builder: (context, animation) {
+        return Container(
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [animation["color1"], animation["color2"]])),
+        );
+      },
+    );
+  }
+}
+
+class _AnimatedWave extends StatelessWidget {
+  final double height;
+  final double speed;
+  final double offset;
+
+  _AnimatedWave({this.height, this.speed, this.offset = 0.0});
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(builder: (context, constraints) {
+      return Container(
+        height: height,
+        width: constraints.biggest.width,
+        child: ControlledAnimation(
+          playback: Playback.LOOP,
+          duration: Duration(milliseconds: (5000 / speed).round()),
+          tween: Tween(begin: 0.0, end: 2 * pi),
+          builder: (context, value) {
+            return CustomPaint(
+              foregroundPainter: _CurvePainter(value + offset),
+            );
+          }),
+      );
+    });
+  }
+}
+
+class _CurvePainter extends CustomPainter {
+  final double value;
+
+  _CurvePainter(this.value);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final white = Paint()..color = Colors.white.withAlpha(60);
+    final path = Path();
+
+    final y1 = sin(value);
+    final y2 = sin(value + pi / 2);
+    final y3 = sin(value + pi);
+
+    final startPointY = size.height * (0.5 + 0.4 * y1);
+    final controlPointY = size.height * (0.5 + 0.4 * y2);
+    final endPointY = size.height * (0.5 + 0.4 * y3);
+
+    path.moveTo(size.width * 0, startPointY);
+    path.quadraticBezierTo(
+        size.width * 0.5, controlPointY, size.width, endPointY);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+    canvas.drawPath(path, white);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
   }
 }
