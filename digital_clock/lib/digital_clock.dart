@@ -20,7 +20,7 @@ enum _Element {
 
 final _lightTheme = {
   _Element.background: Color(0xFF81B3FE),
-  _Element.text: Colors.white,
+  _Element.text: Colors.black,
   _Element.shadow: Colors.black,
 };
 
@@ -46,6 +46,8 @@ class _DigitalClockState extends State<DigitalClock> {
   DateTime _dateTime = DateTime.now();
   Timer _timer;
 
+  final _defaultFontFamily = 'Monda';
+  
   @override
   void initState() {
     super.initState();
@@ -99,26 +101,26 @@ class _DigitalClockState extends State<DigitalClock> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).brightness == Brightness.light
-        ? _lightTheme
-        : _darkTheme;
+    // final colors = Theme.of(context).brightness == Brightness.light
+    //     ? _lightTheme
+    //     : _darkTheme;
     // final hour =
     //     DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
     // final minute = DateFormat('mm').format(_dateTime);
-    final fontSize = MediaQuery.of(context).size.width / 3.5;
-    final offset = -fontSize / 7;
-    final defaultStyle = TextStyle(
-      color: colors[_Element.text],
-      fontFamily: 'PressStart2P',
-      fontSize: fontSize,
-      shadows: [
-        Shadow(
-          blurRadius: 0,
-          color: colors[_Element.shadow],
-          offset: Offset(10, 0),
-        ),
-      ],
-    );
+    // final fontSize = MediaQuery.of(context).size.width / 3.5;
+    // final offset = -fontSize / 7;
+    // final defaultStyle = TextStyle(
+    //   color: colors[_Element.text],
+    //   fontFamily: 'PressStart2P',
+    //   fontSize: fontSize,
+    //   shadows: [
+    //     Shadow(
+    //       blurRadius: 0,
+    //       color: colors[_Element.shadow],
+    //       offset: Offset(10, 0),
+    //     ),
+    //   ],
+    // );
 
     return Stack(
       children: <Widget>[
@@ -193,25 +195,13 @@ class _DigitalClockState extends State<DigitalClock> {
   }
 
   Widget _buildRowBottom() {
-    final hour =
-        DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
-    final minute = DateFormat('mm').format(_dateTime);
-    return Container(
-      child: _buildTime(
-        hour: hour,
-        minute: minute,
-      ),
-    );
-  }
-
-  Widget _buildRowCenter() {
     return Column(
       children: <Widget>[
-        Text(
-          widget.model.weatherString,
-        ),
+        // Text(
+        //   widget.model.weatherString,
+        // ),
         Container(
-          height: 200,
+          height: 60,
           child: FlareCacheBuilder(
             ["assets/Weather_Flat_Icons.flr"],
             builder: (BuildContext context, bool isWarm) {
@@ -230,32 +220,78 @@ class _DigitalClockState extends State<DigitalClock> {
     );
   }
 
-  Widget _buildRowTop() {
-    return Row(
-      children: <Widget>[
-        Text(
-          widget.model.location
-        ),
-        Text(
-          widget.model.temperatureString
-        ),
-      ],
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      mainAxisSize: MainAxisSize.max,
+  Widget _buildRowCenter() {
+    final hour =
+        DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
+    final minute = DateFormat('mm').format(_dateTime);
+    final meridiem = DateFormat('a').format(_dateTime);
+
+    return Container(
+      child: _buildTime(
+        hour: hour,
+        minute: minute,
+        meridiem: widget.model.is24HourFormat ? null : meridiem,
+      ),
     );
   }
 
-  Widget _buildTime({ @required String hour, @required String minute}) {
+  Widget _buildRowTop() {
+    return LayoutBuilder(
+      builder: (context, contraints) {
+        return Row(
+          children: <Widget>[
+            Container(
+              width: contraints.maxWidth / 1.5,
+              child: DefaultTextStyle(
+                style: _defaultTextStyle,
+                child: Text(
+                  widget.model.location,
+                  softWrap: true,
+                  maxLines: 2,
+                ),
+              ),
+            ),
+            Container(
+              child: DefaultTextStyle(
+                style: _defaultTextStyle,
+                child: Text(
+                  widget.model.temperatureString
+                ),
+              ),
+            ),
+          ],
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisSize: MainAxisSize.max,
+        );
+      },
+    );
+    
+  }
+
+  Widget _buildTime({ @required String hour, @required String minute, @required String meridiem }) {
     return Container(
       child: Center(
         child: Row(
+          textBaseline: TextBaseline.alphabetic,
           children: <Widget>[
-            Text(hour),
-            Text(':'),
-            Text(minute),
+            DefaultTextStyle(
+              style: _timeTextStyle,
+              child: Text(
+                '$hour : $minute' 
+              ),
+            ),
+            const SizedBox(
+              width: 16.0,
+            ),
+            DefaultTextStyle(
+              style: _meridiemTextStyle,
+              child: Text(
+                '${meridiem ?? ""}' 
+              ),
+            ),
           ],
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.baseline,
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.max,
         ),
@@ -270,6 +306,54 @@ class _DigitalClockState extends State<DigitalClock> {
       child: child,
     ),
   );
+
+  TextStyle get _defaultTextStyle {
+    return TextStyle(
+      color: _colors[_Element.text],
+      fontFamily: _defaultFontFamily,
+      fontSize: 16.0,
+      // shadows: [
+      //   Shadow(
+      //     blurRadius: 0,
+      //     color: _colors[_Element.shadow],
+      //     offset: Offset(10, 0),
+      //   ),
+      // ],
+    );
+  }
+
+  TextStyle get _timeTextStyle {
+    return TextStyle(
+      color: _colors[_Element.text],
+      fontFamily: _defaultFontFamily,
+      fontSize: 50.0,
+      // shadows: [
+      //   Shadow(
+      //     blurRadius: 0,
+      //     color: _colors[_Element.shadow],
+      //     offset: Offset(10, 0),
+      //   ),
+      // ],
+    );
+  }
+
+  TextStyle get _meridiemTextStyle {
+    return TextStyle(
+      color: _colors[_Element.text],
+      fontFamily: _defaultFontFamily,
+      fontSize: 30.0,
+    );
+  }
+
+  Map<_Element, Color> get _colors {
+    return Theme.of(context).brightness == Brightness.light
+        ? _lightTheme
+        : _darkTheme;
+  }
+
+  double get _fontSize {
+    return MediaQuery.of(context).size.width / 3.5;
+  }
 }
 
 class _AnimatedBackground extends StatelessWidget {
