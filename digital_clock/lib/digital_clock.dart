@@ -30,6 +30,23 @@ final _darkTheme = {
   _Element.shadow: Color(0xFF174EA6),
 };
 
+final Map _weather = {
+  'cloudy': '03d',
+  'cloudy_night': '02n',
+  'foggy': '50d',
+  'foggy_night': '50d',
+  'night': '01n',
+  'rainy': '09d',
+  'rainy_night': '10n',
+  'snowy': '13d',
+  'snowy_night': '13d',
+  'sunny': '01d',
+  'thunderstorm': '11d_rain',
+  'thunderstorm_night': '11d_rain',
+  'windy': 'wind',
+  'windy_night': 'wind',
+};
+
 /// A basic digital clock.
 ///
 /// You can do better than this!
@@ -84,18 +101,18 @@ class _DigitalClockState extends State<DigitalClock> {
       _dateTime = DateTime.now();
       // Update once per minute. If you want to update every second, use the
       // following code.
-      _timer = Timer(
-        Duration(minutes: 1) -
-            Duration(seconds: _dateTime.second) -
-            Duration(milliseconds: _dateTime.millisecond),
-        _updateTime,
-      );
-      // Update once per second, but make sure to do it at the beginning of each
-      // new second, so that the clock is accurate.
       // _timer = Timer(
-      //   Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
+      //   Duration(minutes: 1) -
+      //       Duration(seconds: _dateTime.second) -
+      //       Duration(milliseconds: _dateTime.millisecond),
       //   _updateTime,
       // );
+      // Update once per second, but make sure to do it at the beginning of each
+      // new second, so that the clock is accurate.
+      _timer = Timer(
+        Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
+        _updateTime,
+      );
     });
   }
 
@@ -124,7 +141,10 @@ class _DigitalClockState extends State<DigitalClock> {
 
     return Stack(
       children: <Widget>[
-        Positioned.fill(child: _AnimatedBackground()),
+        // Positioned.fill(child: _AnimatedBackground()),
+        Positioned.fill(child: _TimeBackground(
+          hour: int.parse(_hour),
+        )),
         onBottom(_AnimatedWave(
           height: 100,
           speed: 1.0,
@@ -139,6 +159,7 @@ class _DigitalClockState extends State<DigitalClock> {
           speed: 1.0,
           offset: pi / 2,
         )),
+        Positioned.fill(child: _buildBackgroundColorOverlay()),
         Positioned.fill(child: _buildContent()),
       ],
     );
@@ -194,6 +215,16 @@ class _DigitalClockState extends State<DigitalClock> {
     );
   }
 
+  Widget _buildBackgroundColorOverlay() {
+    return AnimatedContainer(
+      curve: Curves.easeInOutSine,
+      decoration: BoxDecoration(
+        color: _isLightTheme ? Colors.transparent : Colors.black54,
+      ),
+      duration: Duration(seconds: 1),
+    );  
+  }
+
   Widget _buildRowBottom() {
     return Column(
       children: <Widget>[
@@ -211,7 +242,7 @@ class _DigitalClockState extends State<DigitalClock> {
                   "assets/Weather_Flat_Icons.flr",
                   alignment: Alignment.center,
                   fit: BoxFit.contain,
-                  animation: '13d',
+                  animation: flareAnimationName,
                 );
             },
           ),
@@ -221,16 +252,11 @@ class _DigitalClockState extends State<DigitalClock> {
   }
 
   Widget _buildRowCenter() {
-    final hour =
-        DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
-    final minute = DateFormat('mm').format(_dateTime);
-    final meridiem = DateFormat('a').format(_dateTime);
-
     return Container(
       child: _buildTime(
-        hour: hour,
-        minute: minute,
-        meridiem: widget.model.is24HourFormat ? null : meridiem,
+        hour: _hour,
+        minute: _minute,
+        meridiem: _meridiem,
       ),
     );
   }
@@ -307,56 +333,69 @@ class _DigitalClockState extends State<DigitalClock> {
     ),
   );
 
-  TextStyle get _defaultTextStyle {
-    return TextStyle(
-      color: _colors[_Element.text],
-      fontFamily: _defaultFontFamily,
-      fontSize: 16.0,
-      // shadows: [
-      //   Shadow(
-      //     blurRadius: 0,
-      //     color: _colors[_Element.shadow],
-      //     offset: Offset(10, 0),
-      //   ),
-      // ],
-    );
+  TextStyle get _defaultTextStyle => TextStyle(
+    color: _colors[_Element.text],
+    fontFamily: _defaultFontFamily,
+    fontSize: 16.0,
+    // shadows: [
+    //   Shadow(
+    //     blurRadius: 0,
+    //     color: _colors[_Element.shadow],
+    //     offset: Offset(10, 0),
+    //   ),
+    // ],
+  );
+
+  String get flareAnimationName {
+    var _key = '${widget.model.weatherString}';
+    if (!_isDay) {
+      if (widget.model.weatherCondition == WeatherCondition.sunny)
+        _key = 'night';
+      else
+        _key += '_night';
+    }
+    return _weather[_key];
   }
 
-  TextStyle get _timeTextStyle {
-    return TextStyle(
-      color: _colors[_Element.text],
-      fontFamily: _defaultFontFamily,
-      fontSize: 50.0,
-      // shadows: [
-      //   Shadow(
-      //     blurRadius: 0,
-      //     color: _colors[_Element.shadow],
-      //     offset: Offset(10, 0),
-      //   ),
-      // ],
-    );
+  TextStyle get _timeTextStyle => TextStyle(
+    color: _colors[_Element.text],
+    fontFamily: _defaultFontFamily,
+    fontSize: 50.0,
+    // shadows: [
+    //   Shadow(
+    //     blurRadius: 0,
+    //     color: _colors[_Element.shadow],
+    //     offset: Offset(10, 0),
+    //   ),
+    // ],
+  );
+
+  TextStyle get _meridiemTextStyle => TextStyle(
+    color: _colors[_Element.text],
+    fontFamily: _defaultFontFamily,
+    fontSize: 30.0,
+  );
+
+  Map<_Element, Color> get _colors => _isLightTheme ? _lightTheme : _darkTheme;
+
+  double get _fontSize => MediaQuery.of(context).size.width / 3.5;
+
+  String get _hour => DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
+
+  bool get _isDay {
+    final _hour = int.parse(DateFormat('HH').format(_dateTime));
+    return _hour >= 6 && _hour <= 18;
   }
 
-  TextStyle get _meridiemTextStyle {
-    return TextStyle(
-      color: _colors[_Element.text],
-      fontFamily: _defaultFontFamily,
-      fontSize: 30.0,
-    );
-  }
+  bool get _isLightTheme => Theme.of(context).brightness == Brightness.light;
 
-  Map<_Element, Color> get _colors {
-    return Theme.of(context).brightness == Brightness.light
-        ? _lightTheme
-        : _darkTheme;
-  }
+  String get _minute => DateFormat('mm').format(_dateTime);
 
-  double get _fontSize {
-    return MediaQuery.of(context).size.width / 3.5;
-  }
+  String get _meridiem => widget.model.is24HourFormat ? null : DateFormat('a').format(_dateTime);
 }
 
 class _AnimatedBackground extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     final tween = MultiTrackTween([
@@ -440,5 +479,59 @@ class _CurvePainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
+  }
+}
+
+
+class _TimeBackground extends StatelessWidget {
+  final int hour;
+  final List<List<int>> _colorShifts = [
+    [0xff012459, 0xff001322],
+    [0xff003972, 0xff001322],
+    [0xff003972, 0xff001322],
+    [0xff004372, 0xff00182B],
+    [0xff004372, 0xff011D34],
+    [0xff016792, 0xff00182B],
+    [0xff07729F, 0xff042C47],
+    [0xff12A1C0, 0xff07506E],
+    [0xff74D4CC, 0xff1386A6],
+    [0xffEFEEBC, 0xff61D0CF],
+    [0xfffee154, 0xffa3dec6],
+    [0xfffdc352, 0xffe8ed92],
+    [0xffffac6f, 0xffffe467],
+    [0xfffda65a, 0xffffe467],
+    [0xfffd9e58, 0xffffe467],
+    [0xfff18448, 0xffffd364],
+    [0xfff06b7e, 0xfff9a856],
+    [0xffca5a92, 0xfff4896b],
+    [0xff5b2c83, 0xffd1628b],
+    [0xff371a79, 0xff713684],
+    [0xff28166b, 0xff45217c],
+    [0xff192861, 0xff372074],
+    [0xff040b3c, 0xff233072],
+    [0xff040b3c, 0xff012459],
+  ];
+
+  _TimeBackground({
+    Key key,
+    this.hour: 0,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      curve: Curves.easeInOutSine,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(_colorShifts[hour][0]),
+            Color(_colorShifts[hour][1])
+          ],
+        ),
+      ),
+      duration: Duration(seconds: 1),
+    );
   }
 }
