@@ -47,6 +47,8 @@ final Map _weather = {
   'windy_night': 'wind',
 };
 
+final assetFlareWeatherIconsPath = 'assets/animations/Weather_Flat_Icons.flr';
+
 /// A basic digital clock.
 ///
 /// You can do better than this!
@@ -234,12 +236,12 @@ class _DigitalClockState extends State<DigitalClock> {
         Container(
           height: 60,
           child: FlareCacheBuilder(
-            ["assets/Weather_Flat_Icons.flr"],
+            [assetFlareWeatherIconsPath],
             builder: (BuildContext context, bool isWarm) {
               return !isWarm
                 ? Container(child:Text("NO"))
                 : FlareActor(
-                  "assets/Weather_Flat_Icons.flr",
+                  assetFlareWeatherIconsPath,
                   alignment: Alignment.center,
                   fit: BoxFit.contain,
                   animation: flareAnimationName,
