@@ -9,6 +9,7 @@ import 'package:flare_flutter/flare_actor.dart';
 import 'package:flare_flutter/flare_cache_builder.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:simple_animations/simple_animations.dart';
 
@@ -64,8 +65,7 @@ class DigitalClock extends StatefulWidget {
 class _DigitalClockState extends State<DigitalClock> {
   DateTime _dateTime = DateTime.now();
   Timer _timer;
-
-  final _defaultFontFamily = 'Monda';
+  // final _defaultFontFamily = 'Monda';
   
   @override
   void initState() {
@@ -335,17 +335,11 @@ class _DigitalClockState extends State<DigitalClock> {
     ),
   );
 
-  TextStyle get _defaultTextStyle => TextStyle(
-    color: _colors[_Element.text],
-    fontFamily: _defaultFontFamily,
+  TextStyle get _defaultTextStyle => GoogleFonts.monda(
     fontSize: 16.0,
-    // shadows: [
-    //   Shadow(
-    //     blurRadius: 0,
-    //     color: _colors[_Element.shadow],
-    //     offset: Offset(10, 0),
-    //   ),
-    // ],
+    textStyle: TextStyle(
+      color: _colors[_Element.text],
+    ),
   );
 
   String get flareAnimationName {
@@ -359,22 +353,11 @@ class _DigitalClockState extends State<DigitalClock> {
     return _weather[_key];
   }
 
-  TextStyle get _timeTextStyle => TextStyle(
-    color: _colors[_Element.text],
-    fontFamily: _defaultFontFamily,
+  TextStyle get _timeTextStyle => _defaultTextStyle.copyWith(
     fontSize: 50.0,
-    // shadows: [
-    //   Shadow(
-    //     blurRadius: 0,
-    //     color: _colors[_Element.shadow],
-    //     offset: Offset(10, 0),
-    //   ),
-    // ],
   );
 
-  TextStyle get _meridiemTextStyle => TextStyle(
-    color: _colors[_Element.text],
-    fontFamily: _defaultFontFamily,
+  TextStyle get _meridiemTextStyle => _defaultTextStyle.copyWith(
     fontSize: 30.0,
   );
 
