@@ -9,7 +9,6 @@ import 'package:flare_flutter/flare_actor.dart';
 import 'package:flare_flutter/flare_cache_builder.dart';
 import 'package:flutter_clock_helper/model.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:simple_animations/simple_animations.dart';
 
@@ -21,9 +20,15 @@ enum _Element {
 
 final _lightTheme = {
   _Element.background: Color(0xFF81B3FE),
-  _Element.text: Colors.black,
-  _Element.shadow: Colors.black,
+  _Element.text: Colors.white, // Colors.black,
+  _Element.shadow: Color(0x66000000),
 };
+
+final _lightThemeOverlayGradients = [
+  Color(0x44000000),
+  Color(0x1F000000),
+  Color(0x44000000),
+];
 
 final _darkTheme = {
   _Element.background: Colors.black,
@@ -31,24 +36,32 @@ final _darkTheme = {
   _Element.shadow: Color(0xFF174EA6),
 };
 
+final _darkThemeOverlayGradients = [
+  Color(0x8A000000),
+  Color(0x54000000),
+  Color(0x8A000000),
+];
+
 final Map _weather = {
   'cloudy': '03d',
-  'cloudy_night': '02n',
+  'cloudy_night': '03n',
   'foggy': '50d',
-  'foggy_night': '50d',
+  'foggy_night': '50n',
   'night': '01n',
   'rainy': '09d',
-  'rainy_night': '10n',
+  'rainy_night': '09n',
   'snowy': '13d',
-  'snowy_night': '13d',
+  'snowy_night': '13n',
   'sunny': '01d',
   'thunderstorm': '11d_rain',
-  'thunderstorm_night': '11d_rain',
+  'thunderstorm_night': '11n_rain',
   'windy': 'wind',
   'windy_night': 'wind',
 };
 
 final assetFlareWeatherIconsPath = 'assets/animations/Weather_Flat_Icons.flr';
+
+final _weatherIconSize = 36.0;
 
 /// A basic digital clock.
 ///
@@ -63,9 +76,10 @@ class DigitalClock extends StatefulWidget {
 }
 
 class _DigitalClockState extends State<DigitalClock> {
+  final _defaultFontFamily = 'VarelaRoundRegular';
   DateTime _dateTime = DateTime.now();
   Timer _timer;
-  // final _defaultFontFamily = 'Monda';
+  
   
   @override
   void initState() {
@@ -140,62 +154,31 @@ class _DigitalClockState extends State<DigitalClock> {
     //     ),
     //   ],
     // );
+    final _screenHeight = MediaQuery.of(context).size.height;
 
     return Stack(
       children: <Widget>[
-        // Positioned.fill(child: _AnimatedBackground()),
         Positioned.fill(child: _TimeBackground(
           hour: int.parse(_hour),
         )),
         onBottom(_AnimatedWave(
-          height: 100,
+          height: _screenHeight * 0.75,
           speed: 1.0,
         )),
         onBottom(_AnimatedWave(
-          height: 80,
+          height: _screenHeight * 0.65,
           speed: 0.9,
           offset: pi,
         )),
         onBottom(_AnimatedWave(
-          height: 120,
-          speed: 1.0,
+          height: _screenHeight * 0.55,
+          speed: 0.8,
           offset: pi / 2,
         )),
         Positioned.fill(child: _buildBackgroundColorOverlay()),
         Positioned.fill(child: _buildContent()),
       ],
     );
-    // return Container(
-    //   color: colors[_Element.background],
-    //   child: Center(
-    //     child: _buildTime(
-    //       hour: hour,
-    //       minute: minute,
-    //     )
-    //     // child: DefaultTextStyle(
-    //     //   style: defaultStyle,
-    //     //   child: Stack(
-    //     //     children: <Widget>[
-    //     //       Positioned(left: offset, top: 0, child: Text(hour)),
-    //     //       Positioned(right: offset, bottom: offset, child: Text(minute)),
-    //     //     ],
-    //     //   ),
-    //     // ),
-    //     // child: FlareCacheBuilder(
-    //     //   ["assets/Weather_Flat_Icons.flr"],
-    //     //   builder: (BuildContext context, bool isWarm) {
-    //     //     return !isWarm
-    //     //         ? Container(child:Text("NO"))
-    //     //         : FlareActor(
-    //     //             "assets/Weather_Flat_Icons.flr",
-    //     //             alignment: Alignment.center,
-    //     //             fit: BoxFit.contain,
-    //     //             animation: '13d',
-    //     //           );
-    //     //   },
-    //     // ),
-    //   ),
-    // );
   }
 
   Widget _buildContent() {
@@ -206,9 +189,13 @@ class _DigitalClockState extends State<DigitalClock> {
       ),
       child: Column(
         children: <Widget>[
-          _buildRowTop(),
-          _buildRowCenter(),
-          _buildRowBottom(),
+          _buildBarTemperature(),
+          _buildTime(
+            hour: _hour,
+            minute: _minute,
+            meridiem: _meridiem,
+          ),
+          _buildLocation(),
         ],
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -221,105 +208,222 @@ class _DigitalClockState extends State<DigitalClock> {
     return AnimatedContainer(
       curve: Curves.easeInOutSine,
       decoration: BoxDecoration(
-        color: _isLightTheme ? Colors.transparent : Colors.black54,
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: _isLightTheme ? _lightThemeOverlayGradients : _darkThemeOverlayGradients,
+        ),
       ),
       duration: Duration(seconds: 1),
     );  
   }
 
-  Widget _buildRowBottom() {
-    return Column(
-      children: <Widget>[
-        // Text(
-        //   widget.model.weatherString,
-        // ),
-        Container(
-          height: 60,
-          child: FlareCacheBuilder(
-            [assetFlareWeatherIconsPath],
-            builder: (BuildContext context, bool isWarm) {
-              return !isWarm
-                ? Container(child:Text("NO"))
-                : FlareActor(
-                  assetFlareWeatherIconsPath,
-                  alignment: Alignment.center,
-                  fit: BoxFit.contain,
-                  animation: flareAnimationName,
-                );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRowCenter() {
+  Widget _buildBarTemperature() {
     return Container(
-      child: _buildTime(
-        hour: _hour,
-        minute: _minute,
-        meridiem: _meridiem,
+      child: Row(
+        children: <Widget>[
+          _buildWeatherAndTemperature(),
+          _buildLowHighTemperature(),
+        ],
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.max,
       ),
     );
   }
 
-  Widget _buildRowTop() {
-    return LayoutBuilder(
-      builder: (context, contraints) {
-        return Row(
-          children: <Widget>[
-            Container(
-              width: contraints.maxWidth / 1.5,
-              child: DefaultTextStyle(
-                style: _defaultTextStyle,
-                child: Text(
-                  widget.model.location,
-                  softWrap: true,
-                  maxLines: 2,
-                ),
-              ),
-            ),
-            Container(
-              child: DefaultTextStyle(
-                style: _defaultTextStyle,
-                child: Text(
-                  widget.model.temperatureString
-                ),
-              ),
-            ),
-          ],
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          mainAxisSize: MainAxisSize.max,
-        );
-      },
+  Widget _buildWeatherAndTemperature() {
+    return Container(
+      child: Row(
+        children: <Widget>[
+          _buildWeatherIcon(),
+          _buildCurrentTemperature(),
+        ],
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+      ),
     );
     
   }
 
+  Widget _buildWeatherIcon() {
+    return Container(
+      height: _weatherIconSize,
+      width: _weatherIconSize,
+      child: FlareCacheBuilder(
+        [assetFlareWeatherIconsPath],
+        builder: (BuildContext context, bool isWarm) {
+          return !isWarm
+          ? Container()
+          : FlareActor(
+            assetFlareWeatherIconsPath,
+            alignment: Alignment.center,
+            fit: BoxFit.contain,
+            animation: flareAnimationName,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCurrentTemperature() {
+    return Container(
+      // child: Text(
+      //   '${widget.model.temperatureString}',
+      //   style: _defaultTextStyle.copyWith(
+      //     fontSize: 18.0,
+      //     fontWeight: FontWeight.w600,
+      //   ),
+      // ),
+      child: _buildTemperatureText(temperature: widget.model.temperature),
+    );
+  }
+
+  Widget _buildLowHighTemperature() {
+    return Container(
+      child: Row(
+        children: <Widget>[
+          // Text(
+          //   '${widget.model.lowString} / ${widget.model.highString}',
+          //   style: _defaultTextStyle.copyWith(
+          //     fontSize: 16.0,
+          //     fontWeight: FontWeight.w600,
+          //   ),
+          // ),
+          _buildTemperatureText(temperature: widget.model.low),
+          Text(
+            '  |  ',
+            style: _defaultTextStyle.copyWith(
+              fontSize: 12.0,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          _buildTemperatureText(temperature: widget.model.high),
+        ],
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+      ),
+    );
+  }
+
+  Widget _buildTemperatureText({ num temperature }) {
+    return Container(
+      child: RichText(
+        text: TextSpan(
+          children: <TextSpan>[
+            TextSpan(
+              text: '$temperature',
+              style: _defaultTextStyle.copyWith(
+                fontSize: 18.0,
+                fontWeight: FontWeight.w600,
+              ), 
+            ),
+            TextSpan(
+              text: ' ${widget.model.unitString}',
+              style: _defaultTextStyle.copyWith(
+                fontSize: 12.0,
+                fontWeight: FontWeight.w600,
+              ), 
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLocation() {
+    return Container(
+      alignment: Alignment.center,
+      child: DefaultTextStyle(
+        child: Text(
+          widget.model.location,
+          maxLines: 1,
+          overflow: TextOverflow.clip,
+          softWrap: true,
+          textAlign: TextAlign.center,
+        ),
+        style: _defaultTextStyle.copyWith(
+          fontSize: 18.0,
+          fontWeight: FontWeight.w200
+        ),
+      ),
+    );
+  }
+
+  Widget get _buildSingleDot {
+    return Container(
+      height: 20.0,
+      alignment: Alignment.center,
+      child: DefaultTextStyle(
+        child: Text(
+          String.fromCharCode(0x000B7),
+          textAlign: TextAlign.center,
+        ),
+        style: _defaultTextStyle.copyWith(
+          height: 0.5,
+          fontSize: 80.0,
+        ),
+      ),
+    );
+  }
+
+  Widget get _buildColonMark {
+    return Container(
+      child: Column(
+        children: <Widget>[
+          _buildSingleDot,
+          const SizedBox(
+            height: 4.0,
+          ),
+          _buildSingleDot,
+        ],
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+      ),
+      padding: EdgeInsets.symmetric(horizontal: 4.0),
+    );
+  }
+
   Widget _buildTime({ @required String hour, @required String minute, @required String meridiem }) {
+    List<Widget> _texts = [
+      DefaultTextStyle(
+        style: _timeTextStyle,
+        child: Text(
+          '$hour' 
+        ),
+      ),
+      _buildColonMark,
+      DefaultTextStyle(
+        style: _timeTextStyle,
+        child: Text(
+          '$minute' 
+        ),
+      ),
+    ];
+
+    if (meridiem != null && meridiem != '') {
+      _texts.addAll([
+        const SizedBox(
+          width: 16.0,
+        ),
+        DefaultTextStyle(
+          style: _meridiemTextStyle,
+          child: Text(
+            '${meridiem ?? ""}' 
+          ),
+        ),
+      ]);
+    }
+
     return Container(
       child: Center(
         child: Row(
           textBaseline: TextBaseline.alphabetic,
-          children: <Widget>[
-            DefaultTextStyle(
-              style: _timeTextStyle,
-              child: Text(
-                '$hour : $minute' 
-              ),
-            ),
-            const SizedBox(
-              width: 16.0,
-            ),
-            DefaultTextStyle(
-              style: _meridiemTextStyle,
-              child: Text(
-                '${meridiem ?? ""}' 
-              ),
-            ),
-          ],
-          crossAxisAlignment: CrossAxisAlignment.baseline,
+          children: _texts,
+          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.max,
         ),
@@ -335,11 +439,18 @@ class _DigitalClockState extends State<DigitalClock> {
     ),
   );
 
-  TextStyle get _defaultTextStyle => GoogleFonts.monda(
+  TextStyle get _defaultTextStyle => TextStyle(
+    color: _colors[_Element.text],
+    fontFamily: _defaultFontFamily,
     fontSize: 16.0,
-    textStyle: TextStyle(
-      color: _colors[_Element.text],
-    ),
+    fontWeight: FontWeight.w400,
+    shadows: [
+      Shadow(
+        blurRadius: 1.5,
+        color:  _colors[_Element.shadow],
+        offset: Offset(0, 1.5),
+      ),
+    ],
   );
 
   String get flareAnimationName {
@@ -354,7 +465,8 @@ class _DigitalClockState extends State<DigitalClock> {
   }
 
   TextStyle get _timeTextStyle => _defaultTextStyle.copyWith(
-    fontSize: 50.0,
+    fontSize: 100.0,
+    fontWeight: FontWeight.w500,
   );
 
   TextStyle get _meridiemTextStyle => _defaultTextStyle.copyWith(
@@ -362,8 +474,6 @@ class _DigitalClockState extends State<DigitalClock> {
   );
 
   Map<_Element, Color> get _colors => _isLightTheme ? _lightTheme : _darkTheme;
-
-  double get _fontSize => MediaQuery.of(context).size.width / 3.5;
 
   String get _hour => DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
 
@@ -377,34 +487,6 @@ class _DigitalClockState extends State<DigitalClock> {
   String get _minute => DateFormat('mm').format(_dateTime);
 
   String get _meridiem => widget.model.is24HourFormat ? null : DateFormat('a').format(_dateTime);
-}
-
-class _AnimatedBackground extends StatelessWidget {
-
-  @override
-  Widget build(BuildContext context) {
-    final tween = MultiTrackTween([
-      Track("color1").add(Duration(seconds: 3),
-          ColorTween(begin: Color(0xffD38312), end: Colors.lightBlue.shade900)),
-      Track("color2").add(Duration(seconds: 3),
-          ColorTween(begin: Color(0xffA83279), end: Colors.blue.shade600))
-    ]);
-
-    return ControlledAnimation(
-      playback: Playback.MIRROR,
-      tween: tween,
-      duration: tween.duration,
-      builder: (context, animation) {
-        return Container(
-          decoration: BoxDecoration(
-              gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [animation["color1"], animation["color2"]])),
-        );
-      },
-    );
-  }
 }
 
 class _AnimatedWave extends StatelessWidget {
