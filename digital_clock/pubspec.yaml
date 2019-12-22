@@ -6,6 +6,7 @@ environment:
   sdk: ">=2.1.0 <3.0.0"
 
 dependencies:
+  after_layout: ^1.0.7+2
   cupertino_icons: ^0.1.2
   flutter:
     sdk: flutter

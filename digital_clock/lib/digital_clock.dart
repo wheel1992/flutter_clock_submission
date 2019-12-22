@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:after_layout/after_layout.dart';
 import 'package:flare_flutter/flare_actor.dart';
 import 'package:flare_flutter/flare_cache_builder.dart';
 import 'package:flutter_clock_helper/model.dart';
@@ -75,18 +76,24 @@ class DigitalClock extends StatefulWidget {
   _DigitalClockState createState() => _DigitalClockState();
 }
 
-class _DigitalClockState extends State<DigitalClock> {
+class _DigitalClockState extends State<DigitalClock>
+    with AfterLayoutMixin<DigitalClock> {
   final _defaultFontFamily = 'VarelaRoundRegular';
   DateTime _dateTime = DateTime.now();
   Timer _timer;
-  
-  
+  double _screenHeight = 10.0;
+
   @override
   void initState() {
     super.initState();
     widget.model.addListener(_updateModel);
     _updateTime();
     _updateModel();
+  }
+
+  @override
+  void afterFirstLayout(BuildContext context) {
+    _screenHeight = MediaQuery.of(context).size.height;
   }
 
   @override
@@ -134,44 +141,23 @@ class _DigitalClockState extends State<DigitalClock> {
 
   @override
   Widget build(BuildContext context) {
-    // final colors = Theme.of(context).brightness == Brightness.light
-    //     ? _lightTheme
-    //     : _darkTheme;
-    // final hour =
-    //     DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
-    // final minute = DateFormat('mm').format(_dateTime);
-    // final fontSize = MediaQuery.of(context).size.width / 3.5;
-    // final offset = -fontSize / 7;
-    // final defaultStyle = TextStyle(
-    //   color: colors[_Element.text],
-    //   fontFamily: 'PressStart2P',
-    //   fontSize: fontSize,
-    //   shadows: [
-    //     Shadow(
-    //       blurRadius: 0,
-    //       color: colors[_Element.shadow],
-    //       offset: Offset(10, 0),
-    //     ),
-    //   ],
-    // );
-    final _screenHeight = MediaQuery.of(context).size.height;
-
     return Stack(
       children: <Widget>[
-        Positioned.fill(child: _TimeBackground(
+        Positioned.fill(
+            child: _TimeBackground(
           hour: int.parse(_hour),
         )),
         onBottom(_AnimatedWave(
-          height: _screenHeight * 0.75,
+          height: waveHeightByTime,
           speed: 1.0,
         )),
         onBottom(_AnimatedWave(
-          height: _screenHeight * 0.65,
+          height: waveHeightByTime * 0.8,
           speed: 0.9,
           offset: pi,
         )),
         onBottom(_AnimatedWave(
-          height: _screenHeight * 0.55,
+          height: waveHeightByTime * 0.6,
           speed: 0.8,
           offset: pi / 2,
         )),
@@ -211,11 +197,13 @@ class _DigitalClockState extends State<DigitalClock> {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: _isLightTheme ? _lightThemeOverlayGradients : _darkThemeOverlayGradients,
+          colors: _isLightTheme
+              ? _lightThemeOverlayGradients
+              : _darkThemeOverlayGradients,
         ),
       ),
       duration: Duration(seconds: 1),
-    );  
+    );
   }
 
   Widget _buildBarTemperature() {
@@ -244,7 +232,6 @@ class _DigitalClockState extends State<DigitalClock> {
         mainAxisSize: MainAxisSize.max,
       ),
     );
-    
   }
 
   Widget _buildWeatherIcon() {
@@ -255,13 +242,13 @@ class _DigitalClockState extends State<DigitalClock> {
         [assetFlareWeatherIconsPath],
         builder: (BuildContext context, bool isWarm) {
           return !isWarm
-          ? Container()
-          : FlareActor(
-            assetFlareWeatherIconsPath,
-            alignment: Alignment.center,
-            fit: BoxFit.contain,
-            animation: flareAnimationName,
-          );
+              ? Container()
+              : FlareActor(
+                  assetFlareWeatherIconsPath,
+                  alignment: Alignment.center,
+                  fit: BoxFit.contain,
+                  animation: flareAnimationName,
+                );
         },
       ),
     );
@@ -269,13 +256,6 @@ class _DigitalClockState extends State<DigitalClock> {
 
   Widget _buildCurrentTemperature() {
     return Container(
-      // child: Text(
-      //   '${widget.model.temperatureString}',
-      //   style: _defaultTextStyle.copyWith(
-      //     fontSize: 18.0,
-      //     fontWeight: FontWeight.w600,
-      //   ),
-      // ),
       child: _buildTemperatureText(temperature: widget.model.temperature),
     );
   }
@@ -284,13 +264,6 @@ class _DigitalClockState extends State<DigitalClock> {
     return Container(
       child: Row(
         children: <Widget>[
-          // Text(
-          //   '${widget.model.lowString} / ${widget.model.highString}',
-          //   style: _defaultTextStyle.copyWith(
-          //     fontSize: 16.0,
-          //     fontWeight: FontWeight.w600,
-          //   ),
-          // ),
           _buildTemperatureText(temperature: widget.model.low),
           Text(
             '  |  ',
@@ -308,7 +281,7 @@ class _DigitalClockState extends State<DigitalClock> {
     );
   }
 
-  Widget _buildTemperatureText({ num temperature }) {
+  Widget _buildTemperatureText({num temperature}) {
     return Container(
       child: RichText(
         text: TextSpan(
@@ -318,14 +291,14 @@ class _DigitalClockState extends State<DigitalClock> {
               style: _defaultTextStyle.copyWith(
                 fontSize: 18.0,
                 fontWeight: FontWeight.w600,
-              ), 
+              ),
             ),
             TextSpan(
               text: ' ${widget.model.unitString}',
               style: _defaultTextStyle.copyWith(
                 fontSize: 12.0,
                 fontWeight: FontWeight.w600,
-              ), 
+              ),
             ),
           ],
         ),
@@ -345,9 +318,7 @@ class _DigitalClockState extends State<DigitalClock> {
           textAlign: TextAlign.center,
         ),
         style: _defaultTextStyle.copyWith(
-          fontSize: 18.0,
-          fontWeight: FontWeight.w200
-        ),
+            fontSize: 18.0, fontWeight: FontWeight.w200),
       ),
     );
   }
@@ -387,20 +358,19 @@ class _DigitalClockState extends State<DigitalClock> {
     );
   }
 
-  Widget _buildTime({ @required String hour, @required String minute, @required String meridiem }) {
+  Widget _buildTime(
+      {@required String hour,
+      @required String minute,
+      @required String meridiem}) {
     List<Widget> _texts = [
       DefaultTextStyle(
         style: _timeTextStyle,
-        child: Text(
-          '$hour' 
-        ),
+        child: Text('$hour'),
       ),
       _buildColonMark,
       DefaultTextStyle(
         style: _timeTextStyle,
-        child: Text(
-          '$minute' 
-        ),
+        child: Text('$minute'),
       ),
     ];
 
@@ -411,9 +381,7 @@ class _DigitalClockState extends State<DigitalClock> {
         ),
         DefaultTextStyle(
           style: _meridiemTextStyle,
-          child: Text(
-            '${meridiem ?? ""}' 
-          ),
+          child: Text('${meridiem ?? ""}'),
         ),
       ]);
     }
@@ -429,29 +397,28 @@ class _DigitalClockState extends State<DigitalClock> {
         ),
       ),
     );
-    
   }
 
   onBottom(Widget child) => Positioned.fill(
-    child: Align(
-      alignment: Alignment.bottomCenter,
-      child: child,
-    ),
-  );
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: child,
+        ),
+      );
 
   TextStyle get _defaultTextStyle => TextStyle(
-    color: _colors[_Element.text],
-    fontFamily: _defaultFontFamily,
-    fontSize: 16.0,
-    fontWeight: FontWeight.w400,
-    shadows: [
-      Shadow(
-        blurRadius: 1.5,
-        color:  _colors[_Element.shadow],
-        offset: Offset(0, 1.5),
-      ),
-    ],
-  );
+        color: _colors[_Element.text],
+        fontFamily: _defaultFontFamily,
+        fontSize: 16.0,
+        fontWeight: FontWeight.w400,
+        shadows: [
+          Shadow(
+            blurRadius: 1.5,
+            color: _colors[_Element.shadow],
+            offset: Offset(0, 1.5),
+          ),
+        ],
+      );
 
   String get flareAnimationName {
     var _key = '${widget.model.weatherString}';
@@ -465,17 +432,20 @@ class _DigitalClockState extends State<DigitalClock> {
   }
 
   TextStyle get _timeTextStyle => _defaultTextStyle.copyWith(
-    fontSize: 100.0,
-    fontWeight: FontWeight.w500,
-  );
+        fontSize: 100.0,
+        fontWeight: FontWeight.w500,
+      );
 
   TextStyle get _meridiemTextStyle => _defaultTextStyle.copyWith(
-    fontSize: 30.0,
-  );
+        fontSize: 30.0,
+      );
 
   Map<_Element, Color> get _colors => _isLightTheme ? _lightTheme : _darkTheme;
 
-  String get _hour => DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
+  String get _hour =>
+      DateFormat(widget.model.is24HourFormat ? 'HH' : 'hh').format(_dateTime);
+
+  String get _hourIn24Format => DateFormat('HH').format(_dateTime);
 
   bool get _isDay {
     final _hour = int.parse(DateFormat('HH').format(_dateTime));
@@ -486,7 +456,19 @@ class _DigitalClockState extends State<DigitalClock> {
 
   String get _minute => DateFormat('mm').format(_dateTime);
 
-  String get _meridiem => widget.model.is24HourFormat ? null : DateFormat('a').format(_dateTime);
+  String get _meridiem =>
+      widget.model.is24HourFormat ? null : DateFormat('a').format(_dateTime);
+
+  double get waveHeightByTime {
+    int _hr = int.parse(_hourIn24Format);
+    int _min = int.parse(_minute);
+    int _currentMin = ((_hr * 60) + _min);
+    if (_hr == 0 && _min == 0) return _screenHeight;
+
+    if (_currentMin < 60) return _screenHeight * (60.0 / 1440.0);
+
+    return _screenHeight * (_currentMin / 1440.0);
+  }
 }
 
 class _AnimatedWave extends StatelessWidget {
@@ -503,14 +485,14 @@ class _AnimatedWave extends StatelessWidget {
         height: height,
         width: constraints.biggest.width,
         child: ControlledAnimation(
-          playback: Playback.LOOP,
-          duration: Duration(milliseconds: (5000 / speed).round()),
-          tween: Tween(begin: 0.0, end: 2 * pi),
-          builder: (context, value) {
-            return CustomPaint(
-              foregroundPainter: _CurvePainter(value + offset),
-            );
-          }),
+            playback: Playback.LOOP,
+            duration: Duration(milliseconds: (5000 / speed).round()),
+            tween: Tween(begin: 0.0, end: 2 * pi),
+            builder: (context, value) {
+              return CustomPaint(
+                foregroundPainter: _CurvePainter(value + offset),
+              );
+            }),
       );
     });
   }
@@ -548,7 +530,6 @@ class _CurvePainter extends CustomPainter {
     return true;
   }
 }
-
 
 class _TimeBackground extends StatelessWidget {
   final int hour;
@@ -592,10 +573,7 @@ class _TimeBackground extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            Color(_colorShifts[hour][0]),
-            Color(_colorShifts[hour][1])
-          ],
+          colors: [Color(_colorShifts[hour][0]), Color(_colorShifts[hour][1])],
         ),
       ),
       duration: Duration(seconds: 1),
