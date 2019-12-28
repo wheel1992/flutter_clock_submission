@@ -77,7 +77,7 @@ packages:
       name: flare_dart
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.3.0"
+    version: "2.3.2"
   flare_flutter:
     dependency: "direct main"
     description:
