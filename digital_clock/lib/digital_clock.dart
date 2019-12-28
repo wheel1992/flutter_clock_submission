@@ -1,10 +1,5 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 import 'dart:async';
 import 'dart:math';
-
 import 'package:after_layout/after_layout.dart';
 import 'package:flare_flutter/flare_actor.dart';
 import 'package:flare_flutter/flare_cache_builder.dart';
@@ -19,17 +14,7 @@ enum _Element {
   shadow,
 }
 
-final _lightTheme = {
-  _Element.background: Color(0xFF81B3FE),
-  _Element.text: Colors.white, // Colors.black,
-  _Element.shadow: Color(0x66000000),
-};
-
-final _lightThemeOverlayGradients = [
-  Color(0x44000000),
-  Color(0x1F000000),
-  Color(0x44000000),
-];
+final _assetFlareWeatherIconsPath = 'assets/animations/Weather_Flat_Icons.flr';
 
 final _darkTheme = {
   _Element.background: Colors.black,
@@ -41,6 +26,20 @@ final _darkThemeOverlayGradients = [
   Color(0x8A000000),
   Color(0x54000000),
   Color(0x8A000000),
+];
+
+final _defaultFontFamily = 'VarelaRoundRegular';
+
+final _lightTheme = {
+  _Element.background: Color(0xFF81B3FE),
+  _Element.text: Colors.white,
+  _Element.shadow: Color(0x66000000),
+};
+
+final _lightThemeOverlayGradients = [
+  Color(0x44000000),
+  Color(0x1F000000),
+  Color(0x44000000),
 ];
 
 final Map _weather = {
@@ -60,13 +59,8 @@ final Map _weather = {
   'windy_night': 'wind',
 };
 
-final assetFlareWeatherIconsPath = 'assets/animations/Weather_Flat_Icons.flr';
-
 final _weatherIconSize = 36.0;
 
-/// A basic digital clock.
-///
-/// You can do better than this!
 class DigitalClock extends StatefulWidget {
   const DigitalClock(this.model);
 
@@ -78,7 +72,6 @@ class DigitalClock extends StatefulWidget {
 
 class _DigitalClockState extends State<DigitalClock>
     with AfterLayoutMixin<DigitalClock> {
-  final _defaultFontFamily = 'VarelaRoundRegular';
   DateTime _dateTime = DateTime.now();
   Timer _timer;
   double _screenHeight = 10.0;
@@ -114,24 +107,12 @@ class _DigitalClockState extends State<DigitalClock>
   }
 
   void _updateModel() {
-    setState(() {
-      // Cause the clock to rebuild when the model changes.
-    });
+    setState(() {});
   }
 
   void _updateTime() {
     setState(() {
       _dateTime = DateTime.now();
-      // Update once per minute. If you want to update every second, use the
-      // following code.
-      // _timer = Timer(
-      //   Duration(minutes: 1) -
-      //       Duration(seconds: _dateTime.second) -
-      //       Duration(milliseconds: _dateTime.millisecond),
-      //   _updateTime,
-      // );
-      // Update once per second, but make sure to do it at the beginning of each
-      // new second, so that the clock is accurate.
       _timer = Timer(
         Duration(seconds: 1) - Duration(milliseconds: _dateTime.millisecond),
         _updateTime,
@@ -145,7 +126,7 @@ class _DigitalClockState extends State<DigitalClock>
       children: <Widget>[
         Positioned.fill(
             child: _TimeBackground(
-          hour: int.parse(_hour),
+          hour: int.parse(_hourIn24Format),
         )),
         onBottom(_AnimatedWave(
           height: waveHeightByTime,
@@ -239,12 +220,12 @@ class _DigitalClockState extends State<DigitalClock>
       height: _weatherIconSize,
       width: _weatherIconSize,
       child: FlareCacheBuilder(
-        [assetFlareWeatherIconsPath],
+        [_assetFlareWeatherIconsPath],
         builder: (BuildContext context, bool isWarm) {
           return !isWarm
               ? Container()
               : FlareActor(
-                  assetFlareWeatherIconsPath,
+                  _assetFlareWeatherIconsPath,
                   alignment: Alignment.center,
                   fit: BoxFit.contain,
                   animation: flareAnimationName,
@@ -362,7 +343,7 @@ class _DigitalClockState extends State<DigitalClock>
       {@required String hour,
       @required String minute,
       @required String meridiem}) {
-    List<Widget> _texts = [
+    List<Widget> _numbers = [
       DefaultTextStyle(
         style: _timeTextStyle,
         child: Text('$hour'),
@@ -374,29 +355,37 @@ class _DigitalClockState extends State<DigitalClock>
       ),
     ];
 
+    Widget _numberGroup = Row(
+      children: _numbers,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.max,
+    );
+
+    List<Widget> _groups = [_numberGroup];
+
     if (meridiem != null && meridiem != '') {
-      _texts.addAll([
-        const SizedBox(
-          width: 16.0,
-        ),
-        DefaultTextStyle(
-          style: _meridiemTextStyle,
-          child: Text('${meridiem ?? ""}'),
-        ),
+      _groups.addAll([
+        Container(
+          child: DefaultTextStyle(
+            style: _meridiemTextStyle,
+            child: Text('${meridiem ?? ""}'),
+          ),
+          padding: EdgeInsets.only(bottom: 18.0),
+        )
       ]);
     }
 
     return Container(
-      child: Center(
-        child: Row(
-          textBaseline: TextBaseline.alphabetic,
-          children: _texts,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.max,
-        ),
+        child: IntrinsicHeight(
+      child: Row(
+        textBaseline: TextBaseline.ideographic,
+        children: _groups,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.max,
       ),
-    );
+    ));
   }
 
   onBottom(Widget child) => Positioned.fill(
