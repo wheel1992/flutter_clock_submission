@@ -144,13 +144,15 @@ class _DigitalClockState extends State<DigitalClock>
               speed: 0.8,
               offset: pi / 2,
             )),
-            Positioned.fill(child: _buildBackgroundColorOverlay(
-              height: constraints.maxHeight,
-              width: constraints.maxWidth,
+            Positioned.fill(
+                child: _buildBackgroundColorOverlay(
+              height: 480, // constraints.maxHeight,
+              width: 800, // constraints.maxWidth,
             )),
-            Positioned.fill(child: _buildContent(
-              height: constraints.maxHeight,
-              width: constraints.maxWidth,
+            Positioned.fill(
+                child: _buildContent(
+              height: 480, // constraints.maxHeight,
+              width: 800, // constraints.maxWidth,
             )),
           ],
         );
@@ -158,7 +160,7 @@ class _DigitalClockState extends State<DigitalClock>
     );
   }
 
-  Widget _buildContent({ double width, double height }) {
+  Widget _buildContent({double width, double height}) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: 16.0,
@@ -183,7 +185,7 @@ class _DigitalClockState extends State<DigitalClock>
     );
   }
 
-  Widget _buildBackgroundColorOverlay({ double width, double height }) {
+  Widget _buildBackgroundColorOverlay({double width, double height}) {
     return AnimatedContainer(
       curve: Curves.easeInOutSine,
       decoration: BoxDecoration(
@@ -320,16 +322,15 @@ class _DigitalClockState extends State<DigitalClock>
 
   Widget get _buildSingleDot {
     return Container(
-      height: 20.0,
+      height: 15.0,
       alignment: Alignment.center,
-      child: DefaultTextStyle(
-        child: Text(
-          String.fromCharCode(0x000B7),
-          textAlign: TextAlign.center,
-        ),
-        style: _defaultTextStyle.copyWith(
-          height: 0.5,
-          fontSize: 80.0,
+      child: Center(
+        child: RawMaterialButton(
+          constraints: BoxConstraints.tight(Size(15.0, 15.0)),
+          onPressed: () {},
+          shape: CircleBorder(),
+          elevation: 1.0,
+          fillColor: Colors.white,
         ),
       ),
     );
@@ -341,7 +342,7 @@ class _DigitalClockState extends State<DigitalClock>
         children: <Widget>[
           _buildSingleDot,
           const SizedBox(
-            height: 4.0,
+            height: 16.0,
           ),
           _buildSingleDot,
         ],
