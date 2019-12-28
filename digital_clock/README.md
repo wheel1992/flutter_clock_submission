@@ -16,6 +16,11 @@ Tested on Android Emulator with the following specification.
 |Internal Storage|`800 MB`|
 |VM Heap|`48 MB`|
 
+## Test Web
+
+After submitting the project, I have tried my first Flutter web with Firebase hosting.
+Sample of [clock in web](wheel1992/flutter_clock_submission)
+
 ## Features
 
 ### **Color & Wave Changes**
