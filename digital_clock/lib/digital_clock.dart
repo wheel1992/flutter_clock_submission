@@ -122,33 +122,43 @@ class _DigitalClockState extends State<DigitalClock>
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        Positioned.fill(
-            child: _TimeBackground(
-          hour: int.parse(_hourIn24Format),
-        )),
-        onBottom(_AnimatedWave(
-          height: waveHeightByTime,
-          speed: 1.0,
-        )),
-        onBottom(_AnimatedWave(
-          height: waveHeightByTime * 0.8,
-          speed: 0.9,
-          offset: pi,
-        )),
-        onBottom(_AnimatedWave(
-          height: waveHeightByTime * 0.6,
-          speed: 0.8,
-          offset: pi / 2,
-        )),
-        Positioned.fill(child: _buildBackgroundColorOverlay()),
-        Positioned.fill(child: _buildContent()),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Stack(
+          children: <Widget>[
+            Positioned.fill(
+                child: _TimeBackground(
+              hour: int.parse(_hourIn24Format),
+            )),
+            onBottom(_AnimatedWave(
+              height: waveHeightByTime,
+              speed: 1.0,
+            )),
+            onBottom(_AnimatedWave(
+              height: waveHeightByTime * 0.8,
+              speed: 0.9,
+              offset: pi,
+            )),
+            onBottom(_AnimatedWave(
+              height: waveHeightByTime * 0.6,
+              speed: 0.8,
+              offset: pi / 2,
+            )),
+            Positioned.fill(child: _buildBackgroundColorOverlay(
+              height: constraints.maxHeight,
+              width: constraints.maxWidth,
+            )),
+            Positioned.fill(child: _buildContent(
+              height: constraints.maxHeight,
+              width: constraints.maxWidth,
+            )),
+          ],
+        );
+      },
     );
   }
 
-  Widget _buildContent() {
+  Widget _buildContent({ double width, double height }) {
     return Container(
       padding: EdgeInsets.symmetric(
         horizontal: 16.0,
@@ -168,10 +178,12 @@ class _DigitalClockState extends State<DigitalClock>
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         mainAxisSize: MainAxisSize.max,
       ),
+      height: height,
+      width: width,
     );
   }
 
-  Widget _buildBackgroundColorOverlay() {
+  Widget _buildBackgroundColorOverlay({ double width, double height }) {
     return AnimatedContainer(
       curve: Curves.easeInOutSine,
       decoration: BoxDecoration(
@@ -184,6 +196,8 @@ class _DigitalClockState extends State<DigitalClock>
         ),
       ),
       duration: Duration(seconds: 1),
+      height: height,
+      width: width,
     );
   }
 
@@ -377,15 +391,15 @@ class _DigitalClockState extends State<DigitalClock>
     }
 
     return Container(
-        child: IntrinsicHeight(
-      child: Row(
-        textBaseline: TextBaseline.ideographic,
-        children: _groups,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.max,
+      child: IntrinsicHeight(
+        child: Row(
+          children: _groups,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.max,
+        ),
       ),
-    ));
+    );
   }
 
   onBottom(Widget child) => Positioned.fill(
