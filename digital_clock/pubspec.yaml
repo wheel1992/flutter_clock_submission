@@ -25,9 +25,6 @@ flutter:
     - assets/animations/
     - assets/fonts/
   fonts:
-    - family: PressStart2P
-      fonts:
-        - asset: third_party/PressStart2P-Regular.ttf
     - family: VarelaRoundRegular
       fonts:
         - asset: assets/fonts/VarelaRound-Regular.ttf
