@@ -1,11 +1,22 @@
 # Digital Clock
 
-This app is an example of a digital clock.
-It has a light theme and a dark theme.
-See the [Analog Clock](../analog_clock) if you'd like an example that displays the weather and location.
+This digital clock app is built on top of existing `digital_clock` sample.
 
+## Test Device
 
-## Example
+Tested on Android Emulator with the following specification.
+
+|Name|Specification|
+|:--|:--|
+|Screen Size|`4"` (Similar to Lenovo Smart Clock)|
+|Resolution|`480 x 800` (Similar to Lenovo Smart Clock)|
+|Android| `API 28`|
+|Orientation|`Landscape`|
+|RAM|`1024 MB`|
+|Internal Storage|`800 MB`|
+|VM Heap|`48 MB`|
+
+## Features
 
 ### **Color & Wave Changes**
 
@@ -30,4 +41,3 @@ The wave height change with respect to the current hour.
 ### **Weather Icon**
 
 Icons are from [Joseph Cheng - Weather Flat Icons](https://rive.app/a/josephcheng/files/flare/weather-flat-icons/preview) which is a edited version and forked from [AmirHossein SamadiPour - Weather Flat Icons](https://rive.app/a/SamadiPour/files/flare/weather-flat-icons/preview). Under [License (CC BY 4.0)](https://creativecommons.org/licenses/by/4.0/)
-
