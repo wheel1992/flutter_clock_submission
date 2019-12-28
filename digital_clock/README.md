@@ -15,10 +15,17 @@ The wave height change with respect to the current hour.
 
 |Time Period|Light|Dark|Wave Height|
 |:--|:-:|:-:|:--|
-|Morning|![](light_morning.png)|![](dark_morning.png)|Approx. 0.3 of screen height|
-|Afteroon|![](light_afternoon.png)|![](dark_afternoon.png)|Approx. 0.5 of screen height|
-|Evening|![](light_evening.png)|![](dark_evening.png)|Approx. 0.79 of screen height|
-|Midnight|![](light_midnight.png)|![](dark_midnight.png)|Approx. 0.04 of screen height|
+|Morning|![](screenshots/light_morning.png)|![](screenshots/dark_morning.png)|Approx. 0.3 of screen height|
+|Afteroon|![](screenshots/light_afternoon.png)|![](screenshots/dark_afternoon.png)|Approx. 0.5 of screen height|
+|Evening|![](screenshots/light_evening.png)|![](screenshots/dark_evening.png)|Approx. 0.79 of screen height|
+|Midnight|![](screenshots/light_midnight.png)|![](screenshots/dark_midnight.png)|Approx. 0.04 of screen height|
+
+### Time format
+
+|Format|Example|
+|:--|:-:|
+|12 Hours|![](screenshots/format_12_hrs.png)|
+|24 Hours|![](screenshots/format_24_hrs.png)|
 
 ### **Weather Icon**
 
