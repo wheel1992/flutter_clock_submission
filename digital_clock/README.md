@@ -19,7 +19,7 @@ Tested on Android Emulator with the following specification.
 ## Test Web
 
 After submitting the project, I have tried my first Flutter web with Firebase hosting.
-Sample of [clock in web](wheel1992/flutter_clock_submission)
+Sample of [clock in web](https://flutter-clock-300c8.firebaseapp.com/#/)
 
 ## Features
 
